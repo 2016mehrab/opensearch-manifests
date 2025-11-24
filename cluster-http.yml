@@ -72,8 +72,8 @@ spec:
             #    # 2. Dedicated Data Nodes (2+ nodes for HA and storage)
     - component: data-ingest
       #      diskSize: "15Gi"
-      diskSize: "8Gi"
-      replicas: 3
+      diskSize: "2Gi"
+      replicas: 1
       resources:
         requests:
           memory: "2Gi"
