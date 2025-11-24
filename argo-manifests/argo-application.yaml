@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: opensearch-cd
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/2016mehrab/opensearch-manifests
+    targetRevision: HEAD
+    path: .
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+
+#   argocd polls every 3 minutes
+    automated:
+      selfHeal: true
+      prune: true

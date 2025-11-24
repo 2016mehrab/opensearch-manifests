@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: EventSource
+metadata:
+  name: alert-manager-listener
+  namespace: argo-events
+spec:
+  # name can be anything doesn't have to be `service`, only defines server port. methods are defined later
+  service:
+    ports:
+      - port: 12000
+        #        required
+        name: scale-up-twice-port
+        targetPort: 12000
+      - port: 13000
+        targetPort: 13000
+#        required
+        name: scale-up-thrice-port
+#  creates two listeners, name can be anything doesn't have to be `webhook`
+  webhook:
+    scale-up-twice:
+      port: "12000"
+      endpoint: /scale-up-twice
+      method: POST
+    scale-up-thrice:
+      port: "13000"
+      endpoint: /scale-up-thrice
+      method: POST

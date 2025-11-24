@@ -1,0 +1,27 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: operate-workflow-role
+  namespace: argo
+rules:
+  # Permissions needed for managing Argo Workflow objects
+  - apiGroups:
+      - argoproj.io
+    verbs:
+      - "*"
+    resources:
+      - workflows
+      - workflowtemplates
+      - cronworkflows
+      - clusterworkflowtemplates
+      - workflowtaskresults
+  # Permissions needed to access the GitHub token Secret
+  - apiGroups:
+      # Core API group for Secrets
+      - ""
+    verbs:
+      - get
+      - watch
+      - list
+    resources:
+      - secrets

@@ -1,0 +1,37 @@
+# --- SENSOR 1: Triggers the "scale-up-twice" action ---
+apiVersion: argoproj.io/v1alpha1
+kind: Sensor
+metadata:
+  name: scale-up-twice-sensor
+  namespace: argo-events
+spec:
+  # The EventBus this Sensor will subscribe to.
+  # Assumes you used the default name 'native' when deploying the EventBus.
+  eventBusName: default
+
+  # 1. DEPENDENCIES: Define the events this Sensor is waiting for.
+  dependencies:
+    - name: webhook-twice-dep # Local name for this dependency
+      eventSourceName: alert-manager-listener
+      eventName: scale-up-twice # The specific event defined inside that EventSource
+
+  # 2. TRIGGERS: Define the action(s) to execute when dependencies are resolved.
+  triggers:
+    - template:
+        name: trigger-scale-twice-workflow
+        argoWorkflow:
+          group: argoproj.io
+          version: v1alpha1
+          resource: workflows
+#          the action is to submit a new instance of an Argo Workflow.
+          operation: submit
+          source:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                generateName: scale-twice-
+                namespace: argo
+              spec:
+                workflowTemplateRef:
+                  name: scale-up-twice-workflow

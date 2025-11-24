@@ -1,0 +1,89 @@
+#apiVersion: argoproj.io/v1alpha1
+#kind: WorkflowTemplate
+#metadata:
+#  name: scale-up-twice-workflow
+#  namespace: argo
+#spec:
+#  entrypoint: scale-twice
+#  serviceAccountName: argo-workflow
+#  templates:
+#    - name: scale-twice
+#      container:
+#        image: alpine/git
+#        command: [sh, -c]
+#        args:
+#          - |
+#            apk add --no-cache git curl yq bash;
+#            GIT_TOKEN=$(cat /etc/github-token/token)
+#            git clone https://${GIT_TOKEN}@github.com/2016mehrab/opensearch-manifests;
+#            yq -i '.spec.replicas = 2' deployment.yaml;
+#            git config user.name "Argo Bot";
+#            git config user.email "argo@local";
+#            git add deployment.yaml;
+#            git commit -m "Argo scaled up replicas two times";
+#            git push https://${GIT_TOKEN}@github.com/2016mehrab/opensearch-manifests HEAD:main;
+#
+#
+#        volumeMounts:
+#          - name: github-token
+#            mountPath: "/etc/github-token"
+#            readOnly: true
+#      volumes:
+#        - name: github-token
+#          secret:
+#            secretName: github-access-secret
+
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: scale-up-twice-workflow
+  namespace: argo
+spec:
+  entrypoint: scale-twice
+  serviceAccountName: argo-workflow
+  templates:
+    - name: scale-twice
+      container:
+        image: alpine/git
+        command: [sh, -c]
+        args:
+          - |
+            apk add --no-cache git curl yq bash;
+            
+            # --- 1. SETUP & CLONE ---
+            GIT_TOKEN=$(cat /etc/github-token/token)
+            REPO_PATH="opensearch-manifests"
+            git clone https://${GIT_TOKEN}@github.com/2016mehrab/${REPO_PATH};
+            cd ${REPO_PATH};
+            
+            # --- 2. GET, CALCULATE, AND UPDATE REPLICAS ---
+            # NOTE: Assumes the manifest file is named 'opensearch-cluster.yaml'
+            MANIFEST_FILE="opensearch-cluster.yaml"
+            
+            # Extract current replicas for the 'data-ingest' nodepool
+            CURRENT_REPLICAS=$(yq '.spec.nodePools[] | select(.component == "data-ingest") | .replicas' ${MANIFEST_FILE})
+            
+            # Calculate new replicas (current + 1). Bash arithmetic requires $(( ))
+            NEW_REPLICAS=$((CURRENT_REPLICAS + 1))
+            
+            echo "Current Replicas: ${CURRENT_REPLICAS}"
+            echo "New Replicas: ${NEW_REPLICAS}"
+            
+            # Update the replicas field in the manifest using yq
+            yq -i "(.spec.nodePools[] | select(.component == \"data-ingest\") | .replicas) = ${NEW_REPLICAS}" ${MANIFEST_FILE};
+            
+            # --- 3. COMMIT & PUSH CHANGES ---
+            git config user.name "Argo Bot";
+            git config user.email "argo@local";
+            git add ${MANIFEST_FILE};
+            git commit -m "Argo auto-scaled data-ingest to ${NEW_REPLICAS} replicas";
+            git push https://${GIT_TOKEN}@github.com/2016mehrab/opensearch-manifests HEAD:main;
+
+        volumeMounts:
+          - name: github-token
+            mountPath: "/etc/github-token"
+            readOnly: true
+      volumes:
+        - name: github-token
+          secret:
+            secretName: github-access-secret

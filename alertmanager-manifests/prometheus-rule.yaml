@@ -1,0 +1,24 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: opensearch-request-rate-alerts
+  # Must be the namespace where Prometheus lives
+  namespace: monitoring
+  labels:
+    # Must match the selector in your Prometheus CR
+    release: monitoring
+spec:
+  groups:
+    #    this name will be shown in ui
+    - name: opensearch-application.requests
+      rules:
+        - alert: OpensearchConnectionSpike
+          expr: |
+                sum(rate(opensearch_http_open_total_count[1m])) > 10
+          for: 30s
+          labels:
+            severity: warning
+            app: opensearch-connection
+          annotations:
+            summary: "OpenSearch High Connection Rate Detected"
+            description: "New HTTP connections are being established faster than 10/sec, potentially indicating a connection leak or sudden traffic flood."

@@ -1,0 +1,13 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: argo-events-default-trigger-binding
+subjects:
+  - kind: ServiceAccount
+    # sensors ServiceAccount name
+    name: default
+    namespace: argo-events
+roleRef:
+  kind: ClusterRole
+  name: argo-workflow-trigger-role
+  apiGroup: rbac.authorization.k8s.io

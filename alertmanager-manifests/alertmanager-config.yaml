@@ -1,0 +1,55 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: opensearch-alerts-config
+  namespace: monitoring
+  labels:
+    #    used by prometheus to discover this
+    release: monitoring
+spec:
+  # sets the defaults for child routes
+  route:
+    repeatInterval: 15s
+    #     you can set up default receiver here. If the following one's do not match, this receiver will work receiver: 'null'
+    receiver: 'null'
+    routes:
+      - matchers:
+          - name: app
+            value: opensearch-connection
+          - name: severity
+            value: warning
+        receiver: 'null'
+        continue: true
+      - matchers:
+          #     must match your defined labels in prometheus rule.
+          - name: app
+            value: opensearch-connection
+          - name: severity
+            value: warning
+        receiver: 'webhooks'
+        continue: false
+        #        How long to wait before repeating the last notification.
+        repeatInterval: 30s
+  # contains how/where notifications are sent
+  receivers:
+    - name: 'null'
+    - name: 'webhooks'
+      webhookConfigs:
+        - maxAlerts: 5
+          sendResolved: false
+          timeout: 5s
+          url: 'http://host.minikube.internal:3000/webhook-2'
+        - maxAlerts: 5
+          sendResolved: true
+          timeout: 5s
+          # Format: http://<service-name>.<namespace>:<port>/<endpoint>
+          url: 'http://alert-manager-listener-eventsource-svc.argo-events.svc.cluster.local:12000/scale-up-twice'
+        # The maximum number of alerts to include in a single webhook message. Alerts
+        # above this threshold are truncated. When leaving this at its default value of
+        # 0, all alerts are included.
+        - maxAlerts: 5
+          sendResolved: false
+          # The maximum time to wait for a webhook request to complete, before failing the
+          # request and allowing it to be retried.
+          timeout: 5s
+          url: 'http://host.minikube.internal:3000/webhook-1'
