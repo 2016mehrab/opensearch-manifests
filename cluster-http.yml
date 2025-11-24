@@ -24,16 +24,16 @@ spec:
       # Optional, use this to override the tlsConfig of the generated ServiceMonitor, only the following provided options can be set currently
       tlsConfig:
         insecureSkipVerify: true
-      #      #  Name of the Secret you will create
-#      monitoringUserSecret: "opensearch-prom-user-secret"
-      scrapeInterval: "15s"
+        #      #  Name of the Secret you will create
+      #      monitoringUserSecret: "opensearch-prom-user-secret"
 
+      scrapeInterval: "15s"
   dashboards:
     service:
       type: LoadBalancer
-#    tls:
-#      enable: false
-#      generate: false
+    #    tls:
+    #      enable: false
+    #      generate: false
 
     version: 2.14.0
     enable: true
@@ -54,13 +54,13 @@ spec:
         requests:
           memory: "1Gi"
           cpu: "500m"
-#          memory: "512Mi"
-#          cpu: "200m"
+          #          memory: "512Mi"
+          #          cpu: "200m"
         limits:
           memory: "2Gi"
           cpu: "1000m"
-#          memory: "1Gi"
-#          cpu: "500m"
+          #          memory: "1Gi"
+          #          cpu: "500m"
       roles:
         - "cluster_manager"
       persistence:
@@ -68,12 +68,12 @@ spec:
           storageClass: opensearch-sc
           accessModes:
             - ReadWriteOnce
-#
-#    # 2. Dedicated Data Nodes (2+ nodes for HA and storage)
+            #
+            #    # 2. Dedicated Data Nodes (2+ nodes for HA and storage)
     - component: data-ingest
       #      diskSize: "15Gi"
       diskSize: "8Gi"
-      replicas: 2
+      replicas: 3
       resources:
         requests:
           memory: "2Gi"
@@ -93,14 +93,14 @@ spec:
           storageClass: opensearch-sc
           accessModes:
             - ReadWriteOnce
-#    # 3. Dedicated ML Nodes (1+ nodes)
+            #    # 3. Dedicated ML Nodes (1+ nodes)
     - component: ml
       diskSize: "10Gi"
       replicas: 1
       resources:
         requests:
-#          memory: "512Mi"
-#          cpu: "200m"
+          #          memory: "512Mi"
+          #          cpu: "200m"
           memory: "2Gi"
           cpu: "1000m"
         limits:
