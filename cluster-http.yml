@@ -1,0 +1,115 @@
+apiVersion: opensearch.opster.io/v1
+kind: OpenSearchCluster
+metadata:
+  name: "opensearch-prod-cluster"
+  namespace: default
+  labels:
+    release: monitoring
+spec:
+  security:
+    tls:
+      http:
+        generate: true
+      transport:
+        generate: true
+        perNode: true
+  general:
+    httpPort: 9200
+    serviceName: opensearch-svc
+    version: 2.14.0
+    drainDataNodes: true
+    setVMMaxMapCount: true
+    monitoring:
+      enable: true
+      # Optional, use this to override the tlsConfig of the generated ServiceMonitor, only the following provided options can be set currently
+      tlsConfig:
+        insecureSkipVerify: true
+      #      #  Name of the Secret you will create
+#      monitoringUserSecret: "opensearch-prom-user-secret"
+      scrapeInterval: "15s"
+
+  dashboards:
+    service:
+      type: LoadBalancer
+#    tls:
+#      enable: false
+#      generate: false
+
+    version: 2.14.0
+    enable: true
+    replicas: 1
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "100m"
+      limits:
+        memory: "512Mi"
+        cpu: "200m"
+  nodePools:
+    # 1. Dedicated Cluster Managers (3 nodes for HA)
+    - component: cluster-manager
+      diskSize: "5Gi"
+      replicas: 2
+      resources:
+        requests:
+          memory: "1Gi"
+          cpu: "500m"
+#          memory: "512Mi"
+#          cpu: "200m"
+        limits:
+          memory: "2Gi"
+          cpu: "1000m"
+#          memory: "1Gi"
+#          cpu: "500m"
+      roles:
+        - "cluster_manager"
+      persistence:
+        pvc:
+          storageClass: opensearch-sc
+          accessModes:
+            - ReadWriteOnce
+#
+#    # 2. Dedicated Data Nodes (2+ nodes for HA and storage)
+    - component: data-ingest
+      #      diskSize: "15Gi"
+      diskSize: "8Gi"
+      replicas: 2
+      resources:
+        requests:
+          memory: "2Gi"
+          cpu: "500m"
+        #          memory: "1Gi"
+        #          cpu: "300m"
+        limits:
+          #          memory: "2Gi"
+          #          cpu: "1000m"
+          memory: "4Gi"
+          cpu: "1000m"
+      roles:
+        - "data"
+        - "ingest"
+      persistence:
+        pvc:
+          storageClass: opensearch-sc
+          accessModes:
+            - ReadWriteOnce
+#    # 3. Dedicated ML Nodes (1+ nodes)
+    - component: ml
+      diskSize: "10Gi"
+      replicas: 1
+      resources:
+        requests:
+#          memory: "512Mi"
+#          cpu: "200m"
+          memory: "2Gi"
+          cpu: "1000m"
+        limits:
+          memory: "4Gi"
+          cpu: "2000m"
+      roles:
+        - "ml"
+      persistence:
+        pvc:
+          storageClass: opensearch-sc
+          accessModes:
+            - ReadWriteOnce

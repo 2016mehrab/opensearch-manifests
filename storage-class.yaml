@@ -1,0 +1,14 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: opensearch-sc
+provisioner: disk.csi.azure.com
+# Default is Delete, recommended is retain
+reclaimPolicy: Retain
+# only create when specific consumer is consuming volume
+# 'Immediate' will create PV when PVC is created, # Default is Immediate, recommended is WaitForFirstConsumer
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
+parameters:
+  skuName: Standard_LRS
+  fsType: ext4
