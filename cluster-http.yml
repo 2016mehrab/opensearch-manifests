@@ -6,6 +6,8 @@ metadata:
   labels:
     release: monitoring
 spec:
+  confMgmt:
+    smartScaler: true
   security:
     tls:
       http:
@@ -73,7 +75,7 @@ spec:
     - component: data-ingest
       #      diskSize: "15Gi"
       diskSize: "2Gi"
-      replicas: 1
+      replicas: 2
       resources:
         requests:
           memory: "2Gi"

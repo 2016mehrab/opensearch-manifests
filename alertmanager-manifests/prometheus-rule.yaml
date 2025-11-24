@@ -22,3 +22,26 @@ spec:
           annotations:
             summary: "OpenSearch High Connection Rate Detected"
             description: "New HTTP connections are being established faster than 10/sec, potentially indicating a connection leak or sudden traffic flood."
+        - alert: OpenSearchCriticalDiskUsage
+          expr: |
+                ( opensearch_fs_total_available_bytes{cluster=~"opensearch-prod-cluster.*", pod=~"opensearch-prod-cluster-data-ingest-.*"} / opensearch_fs_total_total_bytes{cluster=~"opensearch-prod-cluster.*", pod=~"opensearch-prod-cluster-data-ingest-.*"} ) * 100
+          for: 1m
+          labels:
+            severity: critical
+            tier: datanode
+            app: opensearch-connection
+          annotations:
+            summary: "OpenSearch Disk Capacity Low (SCALE UP)"
+            description: "Disk available space is below 20% on an OpenSearch node ({{ $labels.pod }}). Cluster is at risk of blocking writes. IMMEDIATE action needed to add data nodes."
+        - alert: OpenSearchLowCPUUsage
+          expr: |
+                irate(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{container="opensearch",pod=~"(opensearch-prod-cluster-data-ingest.*)"}[5m]) * 100
+#            low for now
+          for: 1m
+          labels:
+            severity: warning
+            tier: datanode
+            app: opensearch-connection
+          annotations:
+            summary: "OpenSearch Low CPU Utilization (SCALE DOWN Candidate)"
+            description: "Average CPU usage across data nodes is below 30% for 30 minutes. Consider scaling down a data node to optimize cost."

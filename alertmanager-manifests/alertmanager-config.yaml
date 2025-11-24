@@ -25,7 +25,10 @@ spec:
           - name: app
             value: opensearch-connection
           - name: severity
-            value: warning
+            match: severity
+            regex: 'critical|warning'
+          - name: tier
+            value: datanode
         receiver: 'webhooks'
         continue: false
         #        How long to wait before repeating the last notification.

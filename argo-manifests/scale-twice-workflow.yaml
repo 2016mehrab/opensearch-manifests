@@ -58,7 +58,7 @@ spec:
             
             # --- 2. GET, CALCULATE, AND UPDATE REPLICAS ---
             # NOTE: Assumes the manifest file is named 'opensearch-cluster.yaml'
-            MANIFEST_FILE="opensearch-cluster.yaml"
+            MANIFEST_FILE="cluster-http.yml"
             
             # Extract current replicas for the 'data-ingest' nodepool
             CURRENT_REPLICAS=$(yq '.spec.nodePools[] | select(.component == "data-ingest") | .replicas' ${MANIFEST_FILE})
